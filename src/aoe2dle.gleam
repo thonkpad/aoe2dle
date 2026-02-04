@@ -138,9 +138,20 @@ fn compare_answer(correct: Civilization, guess: Civilization) -> GuessResult {
   )
 }
 
+fn check_guess(guess: GuessResult) -> GameState {
+  case guess {
+    GuessResult(
+      name_correct: True,
+      civclass_similarity: 1.0,
+      region_similarity: 1.0,
+    ) -> Finished
+    _ -> Ongoing
+  }
+}
+
 type GameState {
   Finished
-  Started
+  Ongoing
   NotStarted
 }
 
