@@ -5,6 +5,8 @@ import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
 
+import styles
+
 import categories.{type Civilization, compare_civclass, compare_region}
 
 pub type GuessResult {
@@ -77,7 +79,8 @@ fn view(model: Model) -> Element(Msg) {
       attribute.styles([
         #("display", "flex"),
         #("flex-direction", "column"),
-        #("justify-content", "center"),
+        // #("justify-content", "center"),
+        #("padding-top", "20px"),
         #("align-items", "center"),
         #("height", "50vh"),
         #("gap", "0.5rem"),
@@ -104,6 +107,51 @@ fn view(model: Model) -> Element(Msg) {
       // Replace this with another implementation eventually for styling support
       html.datalist([attribute.id("civ-suggestions")], civs.all_civ_strings()),
       html.p([], [element.text("" <> model.committed)]),
+
+      html.div(
+        [attribute.style("display", "flex"), attribute.style("gap", "5px")],
+        [
+          html.div(styles.box_correct(), [element.text("Armenians")]),
+          html.div(styles.box_correct(), [element.text("Infantry, Naval")]),
+          html.div(styles.box_correct(), [element.text("Mediterranean")]),
+        ],
+      ),
+      html.div(
+        [
+          attribute.style("display", "flex"),
+          attribute.style("margin-top", "20px"),
+          attribute.style("gap", "5px"),
+        ],
+        [
+          html.div(styles.box_neutral(), [element.text("Georgians")]),
+          html.div(styles.box_neutral(), [element.text("Cavalry, Defensive")]),
+          html.div(styles.box_correct(), [element.text("Mediterranean")]),
+        ],
+      ),
+      html.div(
+        [
+          attribute.style("display", "flex"),
+          attribute.style("margin-top", "20px"),
+          attribute.style("gap", "5px"),
+        ],
+        [
+          html.div(styles.box_neutral(), [element.text("Romans")]),
+          html.div(styles.box_partial(), [element.text("Infantry")]),
+          html.div(styles.box_correct(), [element.text("Mediterranean")]),
+        ],
+      ),
+      html.div(
+        [
+          attribute.style("display", "flex"),
+          attribute.style("margin-top", "20px"),
+          attribute.style("gap", "5px"),
+        ],
+        [
+          html.div(styles.box_neutral(), [element.text("Vietnamese")]),
+          html.div(styles.box_neutral(), [element.text("Archer")]),
+          html.div(styles.box_neutral(), [element.text("South East Asia")]),
+        ],
+      ),
     ],
   )
 }
