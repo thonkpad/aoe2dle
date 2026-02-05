@@ -8,7 +8,6 @@ fn box(color: String) -> List(attribute.Attribute(a)) {
       #("background-color", "white"),
       #("border", "2px solid " <> color),
       #("padding", "10px"),
-      //   #("margin", "10px"),
       #("display", "flex"),
       #("justify-content", "center"),
       #("align-items", "center"),

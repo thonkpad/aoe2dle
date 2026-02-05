@@ -79,7 +79,6 @@ fn view(model: Model) -> Element(Msg) {
       attribute.styles([
         #("display", "flex"),
         #("flex-direction", "column"),
-        // #("justify-content", "center"),
         #("padding-top", "20px"),
         #("align-items", "center"),
         #("height", "50vh"),
@@ -87,6 +86,10 @@ fn view(model: Model) -> Element(Msg) {
       ]),
     ],
     [
+      html.h1(
+        [attribute.styles([#("margin", "0"), #("margin-bottom", "10px")])],
+        [element.text("AoE2dle")],
+      ),
       html.input([
         attribute.type_("text"),
         attribute.value(display_value),
