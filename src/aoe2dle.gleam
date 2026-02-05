@@ -5,6 +5,40 @@ import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
 
+import categories.{type Civilization, compare_civclass, compare_region}
+
+pub type GuessResult {
+  GuessResult(
+    name_correct: Bool,
+    civclass_similarity: Float,
+    region_similarity: Float,
+  )
+}
+
+pub fn compare_answer(correct: Civilization, guess: Civilization) -> GuessResult {
+  GuessResult(
+    name_correct: correct.name == guess.name,
+    civclass_similarity: compare_civclass(correct.class, guess.class),
+    region_similarity: compare_region(correct.region, guess.region),
+  )
+}
+
+pub fn check_guess(guess: GuessResult) -> GameState {
+  case guess {
+    GuessResult(
+      name_correct: True,
+      civclass_similarity: _,
+      region_similarity: _,
+    ) -> Finished
+    _ -> Ongoing
+  }
+}
+
+pub type GameState {
+  Finished
+  Ongoing
+}
+
 pub fn main() {
   let app = lustre.simple(init, update, view)
   let assert Ok(_) = lustre.start(app, "#app", Nil)
