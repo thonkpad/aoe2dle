@@ -19,5 +19,5 @@ fn civ_option(civ: Civilization) -> element.Element(a) {
 }
 
 pub fn all_civ_strings() {
-  all |> list.map(civ_option)
+  list.map(all, civ_option)
 }
