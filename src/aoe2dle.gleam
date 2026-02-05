@@ -1,4 +1,4 @@
-import gleam/int
+import civs
 import lustre
 import lustre/attribute
 import lustre/element.{type Element}
@@ -46,40 +46,64 @@ pub fn main() {
   Nil
 }
 
-type Model =
-  Int
+type Model {
+  Model(draft: String, committed: String)
+}
 
 fn init(_args) -> Model {
-  0
+  Model("", "")
 }
 
 type Msg {
-  UserClickedIncrement
-  UserClickedDecrement
+  UserTyping(String)
+  UserPressedEnter
 }
 
 fn update(model: Model, msg: Msg) -> Model {
   case msg {
-    UserClickedIncrement -> model + 1
-    UserClickedDecrement -> model - 1
+    UserTyping(value) -> Model(..model, draft: value)
+
+    UserPressedEnter -> Model(draft: "", committed: model.draft)
   }
 }
 
 fn view(model: Model) -> Element(Msg) {
-  let count = int.to_string(model)
-
+  let display_value = case model.committed {
+    "" -> model.draft
+    _ -> model.committed
+  }
   html.div(
     [
-      attribute.style("display", "flex"),
-      attribute.style("flex-direction", "column"),
-      attribute.style("justify-content", "center"),
-      attribute.style("align-items", "center"),
-      attribute.style("height", "50vh"),
+      attribute.styles([
+        #("display", "flex"),
+        #("flex-direction", "column"),
+        #("justify-content", "center"),
+        #("align-items", "center"),
+        #("height", "50vh"),
+        #("gap", "0.5rem"),
+      ]),
     ],
     [
-      html.button([event.on_click(UserClickedIncrement)], [html.text("+")]),
-      html.p([], [html.text(count)]),
-      html.button([event.on_click(UserClickedDecrement)], [html.text("-")]),
+      html.input([
+        attribute.type_("text"),
+        attribute.value(display_value),
+        attribute.placeholder("Enter a civ"),
+
+        attribute.list("civ-suggestions"),
+
+        event.on_input(UserTyping),
+
+        event.on_keydown(fn(key) {
+          case key {
+            "Enter" -> UserPressedEnter
+            _ -> UserTyping(model.draft)
+          }
+        }),
+      ]),
+
+      // Replace this with another implementation eventually for styling support
+      html.datalist([attribute.id("civ-suggestions")], civs.all_civ_strings()),
+      html.p([], [element.text("" <> model.committed)]),
     ],
   )
 }
