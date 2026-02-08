@@ -16,7 +16,7 @@ pub type CivClass {
   CavalryArcher
 }
 
-fn civclass_to_string(civclass: CivClass) -> String {
+pub fn civclass_to_string(civclass: CivClass) -> String {
   case civclass {
     Archer -> "Archer"
     Cavalry -> "Cavalry"

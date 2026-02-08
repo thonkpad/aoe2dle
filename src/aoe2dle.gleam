@@ -1,4 +1,6 @@
 import civs
+import gleam/list
+import gleam/string
 import lustre
 import lustre/attribute
 import lustre/element.{type Element}
@@ -25,6 +27,57 @@ pub fn compare_answer(correct: Civilization, guess: Civilization) -> GuessResult
   )
 }
 
+pub fn create_row(civ: categories.Civilization, result: GuessResult) {
+  let civclasses =
+    civ.class |> list.map(categories.civclass_to_string) |> string.join(", ")
+  let region = categories.region_to_string(civ.region)
+
+  let name_style = case result.name_correct {
+    True -> styles.box_correct()
+    False -> styles.box_wrong()
+  }
+
+  let civclass_style = case result.civclass_similarity {
+    1.0 -> styles.box_correct()
+    0.0 -> styles.box_wrong()
+    _ -> styles.box_partial()
+  }
+
+  let region_style = case result.region_similarity {
+    1.0 -> styles.box_correct()
+    0.0 -> styles.box_wrong()
+    _ -> styles.box_partial()
+  }
+
+  html.div(
+    [
+      attribute.style("display", "flex"),
+      attribute.style("margin-top", "20px"),
+      attribute.style("gap", "5px"),
+    ],
+    [
+      html.div(name_style, [element.text(civ.name)]),
+      html.div(civclass_style, [element.text(civclasses)]),
+      html.div(region_style, [element.text(region)]),
+    ],
+  )
+}
+
+// pub fn show_guess(civ: Civilization) {
+//   let george = case list.last(civs.all) {
+//     Ok(x) -> x
+//     Error(Nil) ->
+//       categories.Civilization(
+//         name: "Lmao",
+//         class: [categories.Infantry, categories.Cavalry],
+//         region: categories.NativeAmerica,
+//       )
+//   }
+
+//   compare_answer(george, civ)
+//   |> todo
+// }
+
 pub fn check_guess(guess: GuessResult) -> GameState {
   case guess {
     GuessResult(
@@ -49,11 +102,11 @@ pub fn main() {
 }
 
 type Model {
-  Model(draft: String, committed: String)
+  Model(draft: String, committed_items: List(String))
 }
 
 fn init(_args) -> Model {
-  Model("", "")
+  Model("", [])
 }
 
 type Msg {
@@ -64,16 +117,12 @@ type Msg {
 fn update(model: Model, msg: Msg) -> Model {
   case msg {
     UserTyping(value) -> Model(..model, draft: value)
-
-    UserPressedEnter -> Model(draft: "", committed: model.draft)
+    UserPressedEnter ->
+      Model(draft: "", committed_items: [model.draft, ..model.committed_items])
   }
 }
 
 fn view(model: Model) -> Element(Msg) {
-  let display_value = case model.committed {
-    "" -> model.draft
-    _ -> model.committed
-  }
   html.div(
     [
       attribute.styles([
@@ -92,13 +141,10 @@ fn view(model: Model) -> Element(Msg) {
       ),
       html.input([
         attribute.type_("text"),
-        attribute.value(display_value),
+        attribute.value(model.draft),
         attribute.placeholder("Enter a civ"),
-
         attribute.list("civ-suggestions"),
-
         event.on_input(UserTyping),
-
         event.on_keydown(fn(key) {
           case key {
             "Enter" -> UserPressedEnter
@@ -106,55 +152,40 @@ fn view(model: Model) -> Element(Msg) {
           }
         }),
       ]),
-
-      // Replace this with another implementation eventually for styling support
       html.datalist([attribute.id("civ-suggestions")], civs.all_civ_strings()),
-      html.p([], [element.text("" <> model.committed)]),
 
       html.div(
-        [attribute.style("display", "flex"), attribute.style("gap", "5px")],
-        [
-          html.div(styles.box_correct(), [element.text("Armenians")]),
-          html.div(styles.box_correct(), [element.text("Infantry, Naval")]),
-          html.div(styles.box_correct(), [element.text("Mediterranean")]),
-        ],
+        [],
+        list.map(model.committed_items, fn(item) {
+          html.p([], [element.text(item)])
+        }),
       ),
-      html.div(
-        [
-          attribute.style("display", "flex"),
-          attribute.style("margin-top", "20px"),
-          attribute.style("gap", "5px"),
-        ],
-        [
-          html.div(styles.box_neutral(), [element.text("Georgians")]),
-          html.div(styles.box_neutral(), [element.text("Cavalry, Defensive")]),
-          html.div(styles.box_correct(), [element.text("Mediterranean")]),
-        ],
-      ),
-      html.div(
-        [
-          attribute.style("display", "flex"),
-          attribute.style("margin-top", "20px"),
-          attribute.style("gap", "5px"),
-        ],
-        [
-          html.div(styles.box_neutral(), [element.text("Romans")]),
-          html.div(styles.box_partial(), [element.text("Infantry")]),
-          html.div(styles.box_correct(), [element.text("Mediterranean")]),
-        ],
-      ),
-      html.div(
-        [
-          attribute.style("display", "flex"),
-          attribute.style("margin-top", "20px"),
-          attribute.style("gap", "5px"),
-        ],
-        [
-          html.div(styles.box_neutral(), [element.text("Vietnamese")]),
-          html.div(styles.box_neutral(), [element.text("Archer")]),
-          html.div(styles.box_neutral(), [element.text("South East Asia")]),
-        ],
-      ),
+
+      test_civ(),
     ],
   )
+}
+
+fn test_civ() {
+  let x = case civs.all |> list.last {
+    Ok(x) -> x
+    Error(Nil) ->
+      categories.Civilization(
+        name: "Lmao",
+        class: [categories.Infantry],
+        region: categories.Africa,
+      )
+  }
+
+  // Compare against the first civ or create a test civ
+  let correct = x
+  // categories.Civilization(
+  //   name: "Armenians",
+  //   class: [categories.Infantry, categories.Naval],
+  //   region: categories.Mediterranean,
+  // )
+
+  let result = compare_answer(correct, x)
+
+  create_row(x, result)
 }

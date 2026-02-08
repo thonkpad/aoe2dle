@@ -14,6 +14,15 @@ pub const all: List(Civilization) = [
   Civ(name: "Georgians", class: [Cavalry, Defensive], region: Mediterranean),
 ]
 
+pub fn find_civ(name: String) -> Result(Civilization, Nil) {
+  let x = list.filter(all, fn(civ) { civ.name == name }) |> list.first
+
+  case x {
+    Ok(civ) -> Ok(civ)
+    Error(Nil) -> Error(Nil)
+  }
+}
+
 fn civ_option(civ: Civilization) -> element.Element(a) {
   html.option([attribute.value(civ.name)], civ.name)
 }

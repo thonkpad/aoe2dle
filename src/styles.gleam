@@ -26,3 +26,7 @@ pub fn box_correct() -> List(attribute.Attribute(a)) {
 pub fn box_partial() -> List(attribute.Attribute(a)) {
   box("yellow")
 }
+
+pub fn box_wrong() -> List(attribute.Attribute(a)) {
+  box("red")
+}
