@@ -15,18 +15,13 @@ pub const all: List(Civilization) = [
 ]
 
 pub fn find_civ(name: String) -> Result(Civilization, Nil) {
-  let x = list.filter(all, fn(civ) { civ.name == name }) |> list.first
-
-  case x {
-    Ok(civ) -> Ok(civ)
-    Error(Nil) -> Error(Nil)
-  }
+  list.find(all, fn(civ) { civ.name == name })
 }
 
 fn civ_option(civ: Civilization) -> element.Element(a) {
   html.option([attribute.value(civ.name)], civ.name)
 }
 
-pub fn all_civ_strings() {
+pub fn all_civ_strings() -> List(element.Element(b)) {
   list.map(all, civ_option)
 }

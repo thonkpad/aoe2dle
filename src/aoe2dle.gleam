@@ -19,6 +19,10 @@ pub type GuessResult {
   )
 }
 
+pub type Guess {
+  Guess(civ: Civilization, result: GuessResult)
+}
+
 pub fn compare_answer(correct: Civilization, guess: Civilization) -> GuessResult {
   GuessResult(
     name_correct: correct.name == guess.name,
@@ -27,7 +31,10 @@ pub fn compare_answer(correct: Civilization, guess: Civilization) -> GuessResult
   )
 }
 
-pub fn create_row(civ: categories.Civilization, result: GuessResult) {
+pub fn create_row(
+  civ: categories.Civilization,
+  result: GuessResult,
+) -> Element(a) {
   let civclasses =
     civ.class |> list.map(categories.civclass_to_string) |> string.join(", ")
   let region = categories.region_to_string(civ.region)
@@ -102,11 +109,25 @@ pub fn main() {
 }
 
 type Model {
-  Model(draft: String, committed_items: List(String))
+  Model(
+    draft: String,
+    guesses: List(Guess),
+    game_state: GameState,
+    correct: Civilization,
+  )
 }
 
 fn init(_args) -> Model {
-  Model("", [])
+  Model(
+    draft: "",
+    guesses: [],
+    game_state: Ongoing,
+    correct: categories.Civilization(
+      name: "Georgians",
+      class: [categories.Cavalry, categories.Defensive],
+      region: categories.Mediterranean,
+    ),
+  )
 }
 
 type Msg {
@@ -117,8 +138,31 @@ type Msg {
 fn update(model: Model, msg: Msg) -> Model {
   case msg {
     UserTyping(value) -> Model(..model, draft: value)
+
     UserPressedEnter ->
-      Model(draft: "", committed_items: [model.draft, ..model.committed_items])
+      case model.game_state {
+        Finished -> model
+
+        Ongoing ->
+          case civs.find_civ(model.draft) {
+            Error(Nil) ->
+              // Invalid civ: ignore submission
+              Model(..model, draft: "")
+
+            Ok(civ) -> {
+              let result = compare_answer(model.correct, civ)
+              let guess = Guess(civ, result)
+              let new_state = check_guess(result)
+
+              Model(
+                ..model,
+                draft: "",
+                guesses: [guess, ..model.guesses],
+                game_state: new_state,
+              )
+            }
+          }
+      }
   }
 }
 
@@ -135,10 +179,8 @@ fn view(model: Model) -> Element(Msg) {
       ]),
     ],
     [
-      html.h1(
-        [attribute.styles([#("margin", "0"), #("margin-bottom", "10px")])],
-        [element.text("AoE2dle")],
-      ),
+      html.h1([], [element.text("AoE2dle")]),
+
       html.input([
         attribute.type_("text"),
         attribute.value(model.draft),
@@ -152,40 +194,16 @@ fn view(model: Model) -> Element(Msg) {
           }
         }),
       ]),
-      html.datalist([attribute.id("civ-suggestions")], civs.all_civ_strings()),
 
+      html.datalist([attribute.id("civ-suggestions")], civs.all_civ_strings()),
       html.div(
         [],
-        list.map(model.committed_items, fn(item) {
-          html.p([], [element.text(item)])
-        }),
+        model.guesses
+          |> list.map(fn(guess) {
+            let Guess(civ, result) = guess
+            create_row(civ, result)
+          }),
       ),
-
-      test_civ(),
     ],
   )
-}
-
-fn test_civ() {
-  let x = case civs.all |> list.last {
-    Ok(x) -> x
-    Error(Nil) ->
-      categories.Civilization(
-        name: "Lmao",
-        class: [categories.Infantry],
-        region: categories.Africa,
-      )
-  }
-
-  // Compare against the first civ or create a test civ
-  let correct = x
-  // categories.Civilization(
-  //   name: "Armenians",
-  //   class: [categories.Infantry, categories.Naval],
-  //   region: categories.Mediterranean,
-  // )
-
-  let result = compare_answer(correct, x)
-
-  create_row(x, result)
 }
