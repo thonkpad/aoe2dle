@@ -70,21 +70,6 @@ pub fn create_row(
   )
 }
 
-// pub fn show_guess(civ: Civilization) {
-//   let george = case list.last(civs.all) {
-//     Ok(x) -> x
-//     Error(Nil) ->
-//       categories.Civilization(
-//         name: "Lmao",
-//         class: [categories.Infantry, categories.Cavalry],
-//         region: categories.NativeAmerica,
-//       )
-//   }
-
-//   compare_answer(george, civ)
-//   |> todo
-// }
-
 pub fn check_guess(guess: GuessResult) -> GameState {
   case guess {
     GuessResult(
@@ -122,11 +107,15 @@ fn init(_args) -> Model {
     draft: "",
     guesses: [],
     game_state: Ongoing,
-    correct: categories.Civilization(
-      name: "Georgians",
-      class: [categories.Cavalry, categories.Defensive],
-      region: categories.Mediterranean,
-    ),
+    correct: case civs.find_civ("Georgians") {
+      Ok(civ) -> civ
+      Error(Nil) ->
+        categories.Civilization(
+          name: "Franks",
+          class: [categories.Cavalry],
+          region: categories.WestEurope,
+        )
+    },
   )
 }
 
