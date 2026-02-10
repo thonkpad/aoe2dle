@@ -149,6 +149,14 @@ pub fn barrackstechs_to_string(x: BarracksTechs) -> String {
   }
 }
 
+pub type Barracks {
+  Barracks(
+    militia_line: MilitiaLine,
+    spearman_line: SpearmanLine,
+    techs: List(BarracksTechs),
+  )
+}
+
 pub type ArcherLine {
   ArcherUnit
   Crossbowman
@@ -199,6 +207,15 @@ pub fn archeryrangetechs_to_string(x: ArcheryRangeTechs) -> String {
   }
 }
 
+pub type ArcheryRange {
+  ArcheryRange(
+    archer_line: ArcherLine,
+    skirmisher_line: SkirmisherLine,
+    cavarcher_line: CavalryArcherLine,
+    techs: List(ArcheryRange),
+  )
+}
+
 pub type ScoutLine {
   ScoutCavalry
   LightCavalry
@@ -237,6 +254,14 @@ pub fn stabletechs_to_string(x: StableTechs) -> String {
     Bloodlines -> "Bloodlines"
     Husbandry -> "Husbandry"
   }
+}
+
+pub type Stable {
+  Stable(
+    scout_line: ScoutLine,
+    knight_line: KnightLine,
+    techs: List(StableTechs),
+  )
 }
 
 pub type Civilization {
